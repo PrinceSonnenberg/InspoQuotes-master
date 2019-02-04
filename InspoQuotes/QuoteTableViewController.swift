@@ -7,8 +7,13 @@
 //
 
 import UIKit
+import StoreKit
 
-class QuoteTableViewController: UITableViewController {
+class QuoteTableViewController: UITableViewController, SKPaymentTransactionObserver {
+   
+    
+    
+    let productID = "com.RoyalQuotes.PremiumQuotes"
     
     var quotesToShow = [
         "Our greatest glory is not in never falling, but in rising every time we fall. — Confucius",
@@ -31,7 +36,7 @@ class QuoteTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
+        SKPaymentQueue.default().add(self)
         
     }
 
@@ -58,26 +63,63 @@ class QuoteTableViewController: UITableViewController {
             cell.textLabel?.text = "Get More Quotes"
             cell.textLabel?.textColor = #colorLiteral(red: 0.1764705926, green: 0.4980392158, blue: 0.7568627596, alpha: 1)
             cell.accessoryType = .disclosureIndicator
-            
+        
             
         }
         
         return cell
     }
-   
+    
+// MARK: - Table view Delegate Methods
+    
+    
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         if indexPath.row == quotesToShow.count{
             
             print("buy quotes pressed")
+            buyPremiumQuotes()
             
         }
-    
+            tableView.deselectRow(at: indexPath, animated: true)
     }
     
     
+// MARK: - In App Purchase Methods
     
-     // MARK: - Table view Delegate Methods
+    func buyPremiumQuotes() {
+        
+        if SKPaymentQueue.canMakePayments(){
+            //usercanmakepayments
+         
+            let paymentRequest = SKMutablePayment()
+            paymentRequest.productIdentifier = productID
+            SKPaymentQueue.default().add(paymentRequest)
+            
+        } else {
+            print("this user is not able to make payments")
+            
+        }
+        
+    }
+    
+    func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
+        
+        for transaction in transactions {
+            
+            if transaction.transactionState == .purchased {
+                //payment sucessfull
+                print("transaction successful")
+                
+            } else if transaction.transactionState == .failed {
+                // payment failed
+                print("transaction failed")
+                
+            }
+            
+        }
+        
+    }
     
     
     @IBAction func restorePressed(_ sender: UIBarButtonItem) {
