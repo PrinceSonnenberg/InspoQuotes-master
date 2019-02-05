@@ -2,8 +2,8 @@
 //  QuoteTableViewController.swift
 //  InspoQuotes
 //
-//  Created by Angela Yu on 18/08/2018.
-//  Copyright © 2018 London App Brewery. All rights reserved.
+//  Created by Prince Sonnenberg on 04/02/2019.
+//  Copyright © 2019 Prince Sonnenberg. All rights reserved.
 //
 
 import UIKit
@@ -38,15 +38,23 @@ class QuoteTableViewController: UITableViewController, SKPaymentTransactionObser
         
         SKPaymentQueue.default().add(self)
         
+        if isPurchased(){
+            showPremiumQuotes()
+            
+        }
+        
     }
 
     // MARK: - Table view data source
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if isPurchased(){
+            return quotesToShow.count
+        } else {
         
         return quotesToShow.count + 1
     }
-
+}
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
@@ -57,6 +65,8 @@ class QuoteTableViewController: UITableViewController, SKPaymentTransactionObser
         cell.textLabel?.text = quotesToShow[indexPath.row]
         
         cell.textLabel?.numberOfLines = 0  // number of lines creates space for sentences
+            cell.textLabel?.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1) // this line sets cells to be normal and not recycled
+            cell.accessoryType = .none      // same as above
             
         } else {
             
@@ -69,6 +79,8 @@ class QuoteTableViewController: UITableViewController, SKPaymentTransactionObser
         
         return cell
     }
+    
+    
     
 // MARK: - Table view Delegate Methods
     
@@ -111,24 +123,62 @@ class QuoteTableViewController: UITableViewController, SKPaymentTransactionObser
                 //payment sucessfull
                 print("transaction successful")
                 
-            } else if transaction.transactionState == .failed {
-                // payment failed
-                print("transaction failed")
+                showPremiumQuotes()
                 
+                UserDefaults.standard.set(true, forKey: productID)
+                
+                SKPaymentQueue.default().finishTransaction(transaction)
+                
+            } else if transaction.transactionState == .failed {
+                
+                // Payment failed
+                
+                if let error = transaction.error{
+                    let errorDescription = error.localizedDescription
+                    print("transaction failed due to error, \(errorDescription)")
+                }
+              
+                SKPaymentQueue.default().finishTransaction(transaction)
             }
             
         }
         
     }
     
+    func showPremiumQuotes() {
+        
+        quotesToShow.append(contentsOf: premiumQuotes)
+        tableView.reloadData()
+        
+    }
+    
+    
+    func isPurchased()-> Bool {
+        
+        let purchaseStatus = UserDefaults.standard.bool(forKey: productID)
+        
+        if purchaseStatus == true {
+            
+            print("previously Purchased")
+            return true
+        } else {
+            
+            print("never purchased")
+            return false
+        }
+        
+    }
     
     @IBAction func restorePressed(_ sender: UIBarButtonItem) {
         
         
         
     }
-
+    
 
 }
 
 
+//disclaimer : paid developer account is needed to complete this app. code along in progress.
+//disclaimer :
+//disclaimer :
